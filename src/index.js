@@ -98,15 +98,7 @@ app.get("*", (req, res) => {
         </style>
       </head>
       <body ${helmet.bodyAttributes.toString()}>
-      <div class="progress pageLoader">
-        <div class="indeterminate"></div>
-      </div>
-      <style>
-      .pageLoader {
-        display: none;
-      }
-   </style>
-   ${initialApp}
+      ${initialApp}
   `;
 
   res.write(Buffer.from(initialHTML));
