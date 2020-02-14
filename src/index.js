@@ -12,6 +12,7 @@ import { renderRoutes } from "react-router-config";
 import serialize from "serialize-javascript";
 import compression from "compression";
 import expressStaticGzip  from "express-static-gzip";
+import Helmet from "react-helmet";
 
 const app = express();
 
@@ -31,7 +32,7 @@ const hideChunks = chunk => {
   return "";
 };
 
-const renderApp = (res, req, context, store, isLast) => {
+const renderApp = (res, req, context, store, isLast, isFirstTime = false) => {
   renderedTimes += 1;
   const content = renderToString(
     <Provider store={store}>
@@ -48,8 +49,12 @@ const renderApp = (res, req, context, store, isLast) => {
   }>${content}</div>
 `;
 
-  res.write(Buffer.from(app));
-  res.flush();
+  if(!isFirstTime) {
+    res.write(Buffer.from(app));
+    res.flush();
+  }
+
+  return app;
 };
 
 app.use(
@@ -74,9 +79,15 @@ app.get("*", (req, res) => {
   const store = createStore(req);
   const context = {};
 
+  const initialApp = renderApp(res, req, context, store, false, true);
+  const helmet = Helmet.renderStatic();
+
   const initialHTML = `
-  <html>
+  <html ${helmet.htmlAttributes.toString()}>
       <head>
+        ${helmet.title.toString()}
+        ${helmet.meta.toString()}
+        ${helmet.link.toString()}
         <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css" as="style" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
         <style>
@@ -86,7 +97,7 @@ app.get("*", (req, res) => {
           }
         </style>
       </head>
-      <body>
+      <body ${helmet.bodyAttributes.toString()}>
       <div class="progress pageLoader">
         <div class="indeterminate"></div>
       </div>
@@ -95,6 +106,7 @@ app.get("*", (req, res) => {
         display: none;
       }
    </style>
+   ${initialApp}
   `;
 
   res.write(Buffer.from(initialHTML));
@@ -117,8 +129,6 @@ app.get("*", (req, res) => {
       });
     }
   });
-
-  renderApp(res, req, context, store, false);
 
   Promise.all(promises).then(() => {
     if (context.url) {

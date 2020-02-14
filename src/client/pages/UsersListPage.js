@@ -66,7 +66,7 @@ class UsersList extends Component {
   head() {
     return (
       <Helmet>
-        <title>{`${this.props.users.length} Users Loaded`}</title>
+        <title>Users Page</title>
         <meta property="og:title" content="Users App" />
       </Helmet>
     );
