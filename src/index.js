@@ -11,7 +11,7 @@ import { Provider } from "react-redux";
 import { renderRoutes } from "react-router-config";
 import serialize from "serialize-javascript";
 import compression from "compression";
-import expressStaticGzip  from "express-static-gzip";
+import expressStaticGzip from "express-static-gzip";
 import Helmet from "react-helmet";
 
 const app = express();
@@ -49,7 +49,7 @@ const renderApp = (res, req, context, store, isLast, isFirstTime = false) => {
   }>${content}</div>
 `;
 
-  if(!isFirstTime) {
+  if (!isFirstTime) {
     res.write(Buffer.from(app));
     res.flush();
   }
