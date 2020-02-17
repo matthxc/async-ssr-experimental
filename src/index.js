@@ -43,10 +43,18 @@ const renderApp = (res, req, context, store, isLast, isFirstTime = false) => {
   );
 
   const app = `
+      <script>
+        var event = new CustomEvent("createChunks", {
+          bubbles: true
+        });
+        var chunkElement = document.querySelector(".chunk-${renderedTimes - 1}");
+        chunkElement && chunkElement.dispatchEvent(event);
+      </script>
       ${hideChunks(renderedTimes - 1)}
       <div class="chunk-${renderedTimes}" ${
-    isLast ? 'id="root"' : ""
-  }>${content}</div>
+    isLast ? 'id="root"' : ""}>
+        ${content}
+      </div>
 `;
 
   if (!isFirstTime) {
@@ -90,6 +98,14 @@ app.get("*", (req, res) => {
         ${helmet.link.toString()}
         <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css" as="style" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+        <script>
+          document.addEventListener("createChunks", function(e) {
+            var element = e.target;
+            if(element.id !== "root") {
+              element.remove();
+            }
+          });
+        </script>
         <style>
           @font-face {
             font-family: "Roboto", sans-serif;
